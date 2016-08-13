@@ -43,9 +43,11 @@ public class BLEService extends Service {
 
 
     public BLEService() {
+        /*
         mBuilder = new NotificationCompat.Builder(this)
                 .setContentTitle("My notification")
                 .setContentText("Hello World!");
+                */
     }
 
     //This function will be called if it's not running and someone calls startService():

@@ -5,8 +5,10 @@ import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothManager;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -70,7 +72,6 @@ public class DeviceScanActivity extends AppCompatActivity implements AdapterView
         scan_listView.setAdapter(mLeDeviceListAdapter);
         scan_listView.setOnItemClickListener(this);
 
-
         // Ensures Bluetooth is enabled on the device.  If Bluetooth is not currently enabled,
         // fire an intent to display a dialog asking the user to grant permission to enable it.
         if (!mBluetoothAdapter.isEnabled()) {
@@ -79,6 +80,9 @@ public class DeviceScanActivity extends AppCompatActivity implements AdapterView
                 startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
             }
         }
+
+        // Open the broadcast receiver:
+        registerReceiver(mGattUpdateReceiver, makeGattUpdateIntentFilter());
 
     }
 
@@ -97,8 +101,12 @@ public class DeviceScanActivity extends AppCompatActivity implements AdapterView
     @Override
     protected void onPause() {
         super.onPause();
+        //Disable BLE Scanning:
         scanLeDevice(false);
+        //Clear the Device List:
         mLeDeviceListAdapter.clear();
+        //Unregister broadcast receiver:
+        unregisterReceiver(mGattUpdateReceiver);
     }
 
     //This function runs when Android needs to create menu bar,
@@ -125,7 +133,6 @@ public class DeviceScanActivity extends AppCompatActivity implements AdapterView
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
         switch (item.getItemId()){
             case R.id.action_scan:
                     mLeDeviceListAdapter.clear();
@@ -204,6 +211,21 @@ public class DeviceScanActivity extends AppCompatActivity implements AdapterView
         Toast.makeText(this, "Connecting", Toast.LENGTH_SHORT).show();
         startActivity(intent);
 
+    }
 
+    private final BroadcastReceiver mGattUpdateReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            final String action = intent.getAction();
+            if (BLEService.ACTION_GATT_CONNECTED.equals(action)) {
+                finish();
+            }
+        }
+    };
+
+    private static IntentFilter makeGattUpdateIntentFilter() {
+        final IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(BLEService.ACTION_GATT_CONNECTED);
+        return intentFilter;
     }
 }

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <!-- "Mark Favorite", should appear as action button if possible -->
+    <item
+        android:id="@+id/action_scan"
+        android:icon="@drawable/ic_bluetooth_searching_white_48dp"
+        android:title="@string/btn_scan"
+        app:showAsAction="ifRoom"/>
+
+    <item
+        android:id="@+id/action_stop"
+        android:icon="@drawable/ic_bluetooth_disabled_white_48dp"
+        android:title="@string/btn_stop"
+        app:showAsAction="ifRoom"/>
+
+    <item
+        android:id="@+id/action_about"
+        android:icon="@drawable/ic_info_white_48dp"
+        android:title="@string/btn_about"
+        app:showAsAction="ifRoom"/>
+
+
+    <!-- Settings, should always be in the overflow -->
+    <!--
+    <item android:id="@+id/action_settings"
+        android:title="@string/action_settings"
+        app:showAsAction="never"/>
+    -->
+
+</menu>

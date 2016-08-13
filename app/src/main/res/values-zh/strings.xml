@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Sensation 藍芽應用程式</string>
+    <string name="btn_refresh">重新整理</string>
+    <string name="btn_about">關於</string>
+    <string name="scan_description">按掃描開始搜尋，然後按裝置名稱進行連線</string>
+    <string name="btn_scan">掃描</string>
+    <string name="about_title">Sensation 藍芽應用程式</string>
+    <string name="about_message">版權所有\n2016\n\nIcon is designed by Pixel Buddha</string>
+    <string name="scan_scanning">正在掃描...</string>
+    <string name="unknown_device">不知名裝置</string>
+    <string name="ble_not_supported">此裝置不支援藍芽 LE 技術</string>
+    <string name="error_bluetooth_not_supported">此裝置不支援藍芽</string>
+    <string name="btn_stop">停止</string>
+</resources>

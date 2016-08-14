@@ -2,16 +2,21 @@ package com.example.cmc7.sensationble;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothManager;
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
+import android.os.IBinder;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -21,13 +26,41 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 public class DeviceScanActivity extends AppCompatActivity implements AdapterView.OnItemClickListener {
+    private final static String TAG = DeviceControlActivity.class.getSimpleName();
     private TextView scan_description;
     private ListView scan_listView;
     private LeDeviceListAdapter mLeDeviceListAdapter;
     private BluetoothAdapter mBluetoothAdapter;
+    private BLEService mBLEService;
+    private ProgressDialog progress;
 
     private static final int REQUEST_ENABLE_BT = 1;
     private boolean mScanning = false;
+
+    // IBinder Connection Object to manage Service lifecycle:
+    private final ServiceConnection mServiceConnection = new ServiceConnection() {
+
+        @Override
+        public void onServiceConnected(ComponentName componentName, IBinder service) {
+            mBLEService = ((BLEService.LocalBinder) service).getService();
+            if (!mBLEService.initialize()) {
+                Log.e(TAG, "SENSATION: Unable to initialize BLE Class");
+                finish();
+            }else{
+                if(mBLEService.getConnectionState()==BLEService.STATE_CONNECTED){
+                    startActivity(new Intent(DeviceScanActivity.this, DeviceControlActivity.class));
+                    finish();
+                    Toast.makeText(DeviceScanActivity.this, "Already connected!", Toast.LENGTH_SHORT).show();
+
+                }
+            }
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName componentName) {
+            mBLEService = null;
+        }
+    };
 
     //This is the "starting point" of this Activity.
     //It will be called by Android automatically, just like main():
@@ -59,6 +92,11 @@ public class DeviceScanActivity extends AppCompatActivity implements AdapterView
             finish();
         }
 
+        // Start the BLEService Service if it's not started:
+        Intent gattServiceIntent = new Intent(this, BLEService.class);
+        startService(gattServiceIntent);
+
+
     }
 
     //This function will run after onCreate(), or when user switch back from other app:
@@ -84,6 +122,10 @@ public class DeviceScanActivity extends AppCompatActivity implements AdapterView
         // Open the broadcast receiver:
         registerReceiver(mGattUpdateReceiver, makeGattUpdateIntentFilter());
 
+        // Bind the service using IBinder, so that this activity can call BLEService's functions:
+        Intent gattServiceIntent = new Intent(this, BLEService.class);
+        bindService(gattServiceIntent, mServiceConnection, BIND_AUTO_CREATE);
+
     }
 
     //This function runs after using responding with the startActivityForResult():
@@ -105,9 +147,14 @@ public class DeviceScanActivity extends AppCompatActivity implements AdapterView
         scanLeDevice(false);
         //Clear the Device List:
         mLeDeviceListAdapter.clear();
+        //Unbind the service:
+        unbindService(mServiceConnection);
+        mBLEService = null;
         //Unregister broadcast receiver:
         unregisterReceiver(mGattUpdateReceiver);
+
     }
+    
 
     //This function runs when Android needs to create menu bar,
     //it should be called automatically during init of the activity:
@@ -207,9 +254,10 @@ public class DeviceScanActivity extends AppCompatActivity implements AdapterView
             mScanning = false;
         }
 
-        //Start the activity:
-        Toast.makeText(this, "Connecting", Toast.LENGTH_SHORT).show();
-        startActivity(intent);
+        //Connect the device, if broadcast is received, start the activity:
+        mBLEService.connect(device);
+        progress = ProgressDialog.show(this, "Please Wait", "Connecting to GATT Server...", true);
+
 
     }
 
@@ -218,7 +266,9 @@ public class DeviceScanActivity extends AppCompatActivity implements AdapterView
         public void onReceive(Context context, Intent intent) {
             final String action = intent.getAction();
             if (BLEService.ACTION_GATT_CONNECTED.equals(action)) {
+                progress.dismiss();
                 finish();
+                startActivity(new Intent(DeviceScanActivity.this, DeviceControlActivity.class));
             }
         }
     };

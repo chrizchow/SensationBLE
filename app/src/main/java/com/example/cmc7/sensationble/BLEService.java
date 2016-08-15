@@ -71,6 +71,13 @@ public class BLEService extends Service {
                     mConnectionState = STATE_CONNECTED;     //oh, it's connected now
                     broadcastUpdate(ACTION_GATT_CONNECTED); //broadcast to let others know
                     Log.i(TAG, "SENSATION:  Connected to GATT server.");
+
+                    // Attempts to discover services after successful connection.
+                    if(mBluetoothGatt.discoverServices())
+                        Log.i(TAG, "SENSATION:  Attempting to start service discovery...");
+                    else
+                        Log.e(TAG, "SENSATION:  Failed to start service discovery!");
+
                     break;
                 case BluetoothProfile.STATE_DISCONNECTED:
                     mConnectionState = STATE_DISCONNECTED;      //oh it's disconnected
@@ -92,6 +99,7 @@ public class BLEService extends Service {
             switch(status){
                 case BluetoothGatt.GATT_SUCCESS:
                     broadcastUpdate(ACTION_GATT_SERVICES_DISCOVERED);   //oh! successful found services
+                    Log.i(TAG, "SENSATION:  onServicesDiscovered successfully");
                     break;
                 default:
                     Log.e(TAG, "SENSATION:  onServicesDiscovered: Strange Thing - "+status);
@@ -325,6 +333,15 @@ public class BLEService extends Service {
     //Get current connection state:
     public int getConnectionState(){
         return mConnectionState;
+    }
+
+    //Get connected device name:
+    public String getConnectedGattDeviceName(){
+        if(mBluetoothDevice!=null){
+            return mBluetoothDevice.getName();
+        }else{
+            return null;
+        }
     }
 
     /*

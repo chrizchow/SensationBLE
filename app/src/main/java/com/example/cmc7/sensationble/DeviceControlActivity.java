@@ -60,6 +60,7 @@ public class DeviceControlActivity extends AppCompatActivity {
         debug_txtView = (TextView) findViewById(R.id.textView);
 
         //TOOD: Under Construction
+        debug_txtView.append("This area shows updates on GATT Things.\n");
     }
 
     //This function will run after onCreate(), or when user switch back from other app:

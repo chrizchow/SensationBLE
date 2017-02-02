@@ -224,6 +224,27 @@ public class BLEService extends Service {
         mBluetoothGatt.readCharacteristic(characteristic);
     }
 
+    //Write characteristic....
+    public void writeCharacteristic(BluetoothGattCharacteristic characteristic) {
+        if (mBluetoothAdapter == null || mBluetoothGatt == null) {
+            Log.w(TAG, "SENSATION:  BluetoothAdapter not initialized");
+            return;
+        }
+        mBluetoothGatt.writeCharacteristic(characteristic);
+    }
+
+    public void setCharacteristicNotification(BluetoothGattCharacteristic characteristic){
+        mBluetoothGatt.setCharacteristicNotification(characteristic,true);
+        for (BluetoothGattDescriptor descriptor:characteristic.getDescriptors()){
+            descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
+            mBluetoothGatt.writeDescriptor(descriptor);
+        }
+    }
+
+    public void readDescriptor(BluetoothGattDescriptor descriptor){
+        mBluetoothGatt.readDescriptor(descriptor);
+    }
+
     //Retrieves a list of supported GATT services on the connected device.
     //This should be called after mBluetoothGatt.discoverServices() completes:
     public List<BluetoothGattService> getSupportedGattServices() {
@@ -317,7 +338,6 @@ public class BLEService extends Service {
         Log.d(TAG, "SENSATION:  Trying to create a new connection.");
         mConnectionState = STATE_CONNECTING;
         return true;
-
     }
 
     //Close connection to release the resources and free the BLE device properly.
@@ -328,6 +348,7 @@ public class BLEService extends Service {
         mBluetoothGatt.close();  //free BLE device
         mBluetoothGatt = null;   //release resources
         mBluetoothDevice = null; //clear the device record in this service
+        mConnectionState = STATE_DISCONNECTED;
     }
 
     //Get current connection state:

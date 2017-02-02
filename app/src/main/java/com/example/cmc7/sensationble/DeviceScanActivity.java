@@ -25,6 +25,12 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import android.Manifest;
+import android.support.annotation.NonNull;
+
+import android.support.v4.app.ActivityCompat;
+
+
 public class DeviceScanActivity extends AppCompatActivity implements AdapterView.OnItemClickListener {
     private final static String TAG = DeviceControlActivity.class.getSimpleName();
     private TextView scan_description;
@@ -92,9 +98,7 @@ public class DeviceScanActivity extends AppCompatActivity implements AdapterView
             finish();
         }
 
-        // Start the BLEService Service if it's not started:
-        Intent gattServiceIntent = new Intent(this, BLEService.class);
-        startService(gattServiceIntent);
+        ActivityCompat.requestPermissions(this,new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, 1001); //Any number can be used
 
 
     }
@@ -193,6 +197,26 @@ public class DeviceScanActivity extends AppCompatActivity implements AdapterView
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        switch (requestCode) {
+            case 1001: {
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED
+                        && (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+                        || ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED)) {
+                    //Start your service here
+
+                    // Start the BLEService Service if it's not started:
+                    Intent gattServiceIntent = new Intent(this, BLEService.class);
+                    startService(gattServiceIntent);
+
+                }
+            }
+        }
     }
 
     private void scanLeDevice(final boolean enable) {

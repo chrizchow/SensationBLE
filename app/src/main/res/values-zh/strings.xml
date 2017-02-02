@@ -12,4 +12,7 @@
     <string name="ble_not_supported">此裝置不支援藍芽 LE 技術</string>
     <string name="error_bluetooth_not_supported">此裝置不支援藍芽</string>
     <string name="btn_stop">停止</string>
+    <string name="refresh">重新整理</string>
+    <string name="time_sync">時間同步</string>
+    <string name="disconnect">斷線</string>
 </resources>

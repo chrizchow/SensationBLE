@@ -11,4 +11,7 @@
     <string name="ble_not_supported">Bluetooth LE is not supported on this device</string>
     <string name="error_bluetooth_not_supported">Bluetooth is not supported on this device</string>
     <string name="btn_stop">Stop</string>
+    <string name="refresh">Refresh</string>
+    <string name="time_sync">Time Synchronize</string>
+    <string name="disconnect">Disconnect</string>
 </resources>

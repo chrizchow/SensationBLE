@@ -40,6 +40,4 @@
                android:text="@string/cancel"/>
        </TableRow>
 
-
-
 </TableLayout>

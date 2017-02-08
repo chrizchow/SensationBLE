@@ -311,7 +311,6 @@ public class DeviceControlActivity extends AppCompatActivity {
         {
             @Override
             public void onClick(View v) {
-                button.setText(np.getValue());
                 DeviceScanActivity.getInstance().weight = np.getValue();
                 d.dismiss();
             }

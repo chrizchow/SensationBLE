@@ -1,5 +1,7 @@
 package com.example.cmc7.sensationble;
 
+import android.app.AlertDialog;
+import android.app.Dialog;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCallback;
 import android.bluetooth.BluetoothGattCharacteristic;
@@ -16,9 +18,13 @@ import android.os.IBinder;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.NumberPicker;
 import android.widget.TextView;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import java.lang.reflect.Array;
@@ -31,6 +37,9 @@ public class DeviceControlActivity extends AppCompatActivity {
     TextView heartrate_text; //debug code
     TextView step_text;
     TextView button;
+    TextView calories_text;
+    static Dialog d;
+    ProgressBar step_pro;
     //List<BluetoothGattCharacteristic> chars = new ArrayList<BluetoothGattCharacteristic>();
 
     private final static String TAG = DeviceControlActivity.class.getSimpleName();
@@ -54,7 +63,10 @@ public class DeviceControlActivity extends AppCompatActivity {
 
                 //Temporarily title this activity with device name:
                 String deviceName = mBLEService.getConnectedGattDeviceName();
-                if(deviceName!=null) getSupportActionBar().setTitle(deviceName);
+                if(deviceName!=null) {
+                    getSupportActionBar().setTitle(deviceName);
+                }
+
             }
         }
 
@@ -72,13 +84,15 @@ public class DeviceControlActivity extends AppCompatActivity {
         heartrate_text = (TextView) findViewById(R.id.heartrate);
         step_text = (TextView) findViewById(R.id.step);
         button = (TextView) findViewById(R.id.debug);
+        calories_text = (TextView) findViewById(R.id.calories);
+        step_pro = (ProgressBar) findViewById(R.id.progressRed);
         heartrate_text.setText("000");
         step_text.setText("0");
         button.setText(" ");
+        calories_text.setText("0 calories");
+        step_pro.setMax(12500);
 
         //TODO: Under Construction
-
-
 
         Button refresh = (Button) findViewById(R.id.refresh);
         refresh.setOnClickListener(new View.OnClickListener() {
@@ -90,22 +104,6 @@ public class DeviceControlActivity extends AppCompatActivity {
 
             }
 
-        });
-
-        Button time_sync = (Button) findViewById(R.id.time_sync);
-        time_sync.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-
-                BluetoothGattCharacteristic chara = mBLEService.getSupportedGattServices().get(2).getCharacteristics().get(6);
-                Long tsLong = System.currentTimeMillis()/1000;
-                tsLong = tsLong - 946656000;
-                int tsInt = tsLong.intValue();
-                String ts = tsLong.toString();
-                button.setText(ts);
-                chara.setValue(tsInt,BluetoothGattCharacteristic.FORMAT_UINT32,0);
-                mBLEService.writeCharacteristic(chara);
-
-            }
         });
 
         Button disconnect = (Button) findViewById(R.id.disconnect);
@@ -159,23 +157,22 @@ public class DeviceControlActivity extends AppCompatActivity {
             final String action = intent.getAction();
             if (BLEService.ACTION_GATT_DISCONNECTED.equals(action)) {
                 //Show string if the GATT has already disconnected:
-                heartrate_text.append("GATT has been disconnected!\n");
+                Log.i(TAG,"GATT has been disconnected!");
 
 
                 //finish();
-                //Toast.makeText(DeviceControlActivity.this, "Disconnected", Toast.LENGTH_SHORT).show();
+                Toast.makeText(DeviceControlActivity.this, "BLE Device Disconnected", Toast.LENGTH_SHORT).show();
             }else if(BLEService.ACTION_GATT_SERVICES_DISCOVERED.equals(action)){
                 //Show it to screen:
-                //heartrate_text.append("GATT Services Discovered!\n");
-                List<BluetoothGattService> serviceList = mBLEService.getSupportedGattServices();
-                for(BluetoothGattService service: serviceList){
-                    //heartrate_text.append("\tService UUID:" + service.getUuid().toString()+"\n");
-                    Log.i(TAG, "-");
-                    List<BluetoothGattCharacteristic> charslist = service.getCharacteristics();
-                    for(BluetoothGattCharacteristic chara: charslist){
-                        Log.i(TAG,chara.getUuid().toString());
-                    }
-                }
+
+                BluetoothGattCharacteristic chara = mBLEService.getSupportedGattServices().get(2).getCharacteristics().get(6);
+                Long tsLong = System.currentTimeMillis() / 1000;
+                tsLong = tsLong - 946656000;
+                int tsInt = tsLong.intValue();
+                String ts = tsLong.toString();
+                button.setText(ts);
+                chara.setValue(tsInt, BluetoothGattCharacteristic.FORMAT_UINT32, 0);
+                mBLEService.writeCharacteristic(chara);
 
             }else if(BLEService.ACTION_DATA_AVAILABLE.equals(action)){
                 //Take the available data:
@@ -186,16 +183,10 @@ public class DeviceControlActivity extends AppCompatActivity {
                 //Show it to screen:
                 String step_id = "0000fff6-0000-1000-8000-00805f9b34fb";
                 String heartrate_id = "00002a37-0000-1000-8000-00805f9b34fb";
-                //if (uuid.equals(heartrate_id)){
-                //    heartrate_text.append("\t\tAction_Data_Avalable\n");     //debug
-
-                //    heartrate_text.append("\t\tCharacteristic UUID: " + uuid + "\n");
-                //    heartrate_text.append("\t\t\tContent:" + new String(bytes) + "\n");
-                //}
 
                 if(uuid.equals(step_id)){
                     //step_text.append("\t\tAction_Data_Avalable\n");     //debug
-                        //D2 04 00 00
+                    //D2 04 00 00
                     String str = new String(bytes);
                     Integer step = bytes[0] & 0xFF |
                             (bytes[1] & 0xFF) << 8 |
@@ -207,6 +198,9 @@ public class DeviceControlActivity extends AppCompatActivity {
                     }
                     step_text.setText(step.toString());
 
+                    step_pro.setProgress(step);
+
+                    changeCalories(step);
 
                 }
                 else{
@@ -243,6 +237,96 @@ public class DeviceControlActivity extends AppCompatActivity {
 
         return intentFilter;
     }
+
+    //This function runs when Android needs to create menu bar,
+    //it should be called automatically during init of the activity:
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.action_devicecontrol, menu);
+
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle action bar item clicks here. The action bar will
+        // automatically handle clicks on the Home/Up button, so long
+        // as you specify a parent activity in AndroidManifest.xml.
+        switch (item.getItemId()){
+            case R.id.action_about:
+                aboutDialog();
+                break;
+            case R.id.action_change:
+                changeDialog();
+                break;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
+    public void changeCalories(int step){
+        double weight = DeviceScanActivity.getInstance().weight;
+        double temp = 2.20462262 * weight * 0.57;
+        temp /= 2200;
+        temp *= step;
+        DeviceScanActivity.getInstance().calories = (int)temp;
+
+        calories_text.setText(Integer.toString((int)temp) + " Calories");
+    }
+
+    // This function shows the "About" dialog. Nothing really magical:
+    private void aboutDialog(){
+        // 1. Instantiate an AlertDialog.Builder with its constructor
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        // 2. Chain together various setter methods to set the dialog characteristics
+        builder.setMessage(R.string.about_message)
+                .setTitle(R.string.about_title);
+        // 3. Get the AlertDialog from create()
+        AlertDialog dialog = builder.create();
+        dialog.show();
+
+    }
+
+    private void changeDialog(){
+        final Dialog d = new Dialog(this);
+        d.setTitle("Change Information");
+        d.setContentView(R.layout.number_picker);
+        Button b1 = (Button) d.findViewById(R.id.button1);
+        Button b2 = (Button) d.findViewById(R.id.button2);
+        final NumberPicker np = (NumberPicker) d.findViewById(R.id.numberPicker);
+
+        np.setMaxValue(100);
+        np.setMinValue(0);
+        np.setValue(DeviceScanActivity.getInstance().weight);
+        np.setWrapSelectorWheel(false);
+        np.setOnValueChangedListener(new NumberPicker.OnValueChangeListener() {
+            @Override
+            public void onValueChange(NumberPicker numberPicker, int i, int i1) {
+                np.setTag(i1);
+            }
+        });
+
+        b1.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v) {
+                button.setText(np.getValue());
+                DeviceScanActivity.getInstance().weight = np.getValue();
+                d.dismiss();
+            }
+        });
+        b2.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v) {
+                d.dismiss(); // dismiss the dialog
+            }
+        });
+        d.show();
+
+    }
+
 
 
 }

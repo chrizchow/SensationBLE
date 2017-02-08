@@ -2,6 +2,7 @@ package com.example.cmc7.sensationble;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.Application;
 import android.app.ProgressDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -32,6 +33,17 @@ import android.support.v4.app.ActivityCompat;
 
 
 public class DeviceScanActivity extends AppCompatActivity implements AdapterView.OnItemClickListener {
+    private static  DeviceScanActivity mInstance = null;
+    public int weight = 50;
+    public int calories = 0;
+    protected DeviceScanActivity(){}
+    public static synchronized DeviceScanActivity getInstance(){
+        if(null == mInstance){
+            mInstance = new DeviceScanActivity();
+        }
+        return mInstance;
+    }
+
     private final static String TAG = DeviceControlActivity.class.getSimpleName();
     private TextView scan_description;
     private ListView scan_listView;
@@ -158,7 +170,7 @@ public class DeviceScanActivity extends AppCompatActivity implements AdapterView
         unregisterReceiver(mGattUpdateReceiver);
 
     }
-    
+
 
     //This function runs when Android needs to create menu bar,
     //it should be called automatically during init of the activity:
@@ -186,12 +198,12 @@ public class DeviceScanActivity extends AppCompatActivity implements AdapterView
         // as you specify a parent activity in AndroidManifest.xml.
         switch (item.getItemId()){
             case R.id.action_scan:
-                    mLeDeviceListAdapter.clear();
-                    scanLeDevice(true);
-                    break;
+                mLeDeviceListAdapter.clear();
+                scanLeDevice(true);
+                break;
             case R.id.action_stop:
-                    scanLeDevice(false);
-                    break;
+                scanLeDevice(false);
+                break;
             case R.id.action_about:
                 aboutDialog();
         }
@@ -293,6 +305,10 @@ public class DeviceScanActivity extends AppCompatActivity implements AdapterView
                 progress.dismiss();
                 finish();
                 startActivity(new Intent(DeviceScanActivity.this, DeviceControlActivity.class));
+            }else if (BLEService.ACTION_GATT_DISCONNECTED.equals(action)){
+                progress.dismiss();
+                Toast.makeText(context, "BLE Device Timeout!", Toast.LENGTH_SHORT).show();
+                finish();
             }
         }
     };

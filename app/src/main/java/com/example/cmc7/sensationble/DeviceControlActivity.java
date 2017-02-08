@@ -2,6 +2,7 @@ package com.example.cmc7.sensationble;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.app.Service;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCallback;
 import android.bluetooth.BluetoothGattCharacteristic;
@@ -15,6 +16,7 @@ import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.media.audiofx.AudioEffect;
 import android.os.IBinder;
+import android.os.Vibrator;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -203,7 +205,7 @@ public class DeviceControlActivity extends AppCompatActivity {
                     changeCalories(step);
 
                 }
-                else{
+                else if(uuid.equals(heartrate_id)){
 
                     String str2 = new String(bytes);
                     Integer heart = bytes[0] & 0xFF | (bytes[1] & 0xFF) << 8;
@@ -219,7 +221,10 @@ public class DeviceControlActivity extends AppCompatActivity {
 
                     BluetoothGattCharacteristic stepCount = mBLEService.getSupportedGattServices().get(2).getCharacteristics().get(5);
                     mBLEService.readCharacteristic(stepCount);
-
+                    fallDialog();
+                }
+                else{
+                    fallDialog();
                 }
 
 
@@ -324,6 +329,19 @@ public class DeviceControlActivity extends AppCompatActivity {
         });
         d.show();
 
+    }
+
+    private void fallDialog(){
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        // 2. Chain together various setter methods to set the dialog characteristics
+        builder.setMessage(R.string.fall_message)
+                .setTitle(R.string.fall_title);
+        // 3. Get the AlertDialog from create()
+        AlertDialog dialog = builder.create();
+        dialog.show();
+
+        Vibrator vibrator = (Vibrator) getApplication().getSystemService(Service.VIBRATOR_SERVICE);
+        vibrator.vibrate(new long[]{500, 1000, 500, 1000, 500, 1000}, -1);
     }
 
 

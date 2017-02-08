@@ -19,4 +19,6 @@
     <string name="weight">Weight(kg)</string>
     <string name="set">Set</string>
     <string name="cancel">Cancel</string>
+    <string name="fall_title">Warning!</string>
+    <string name="fall_message">The user fell!!!</string>
 </resources>

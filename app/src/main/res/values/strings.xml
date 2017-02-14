@@ -20,5 +20,7 @@
     <string name="set">Set</string>
     <string name="cancel">Cancel</string>
     <string name="fall_title">Warning!</string>
-    <string name="fall_message">The user fell!!!</string>
+    <string name="fall_message">The User Fell!!!</string>
+    <string name="steps_picker">Steps Goal</string>
+    <string name="steps_change">Change Steps Goal</string>
 </resources>

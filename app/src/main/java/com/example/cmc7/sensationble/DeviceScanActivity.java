@@ -36,6 +36,7 @@ public class DeviceScanActivity extends AppCompatActivity implements AdapterView
     private static  DeviceScanActivity mInstance = null;
     public int weight = 50;
     public int calories = 0;
+    public int steps_goal = 12500;
     protected DeviceScanActivity(){}
     public static synchronized DeviceScanActivity getInstance(){
         if(null == mInstance){

@@ -265,6 +265,9 @@ public class DeviceControlActivity extends AppCompatActivity {
             case R.id.action_change:
                 changeDialog();
                 break;
+            case R.id.steps_change:
+                changeSteps();
+                break;
         }
 
         return super.onOptionsItemSelected(item);
@@ -344,6 +347,43 @@ public class DeviceControlActivity extends AppCompatActivity {
         vibrator.vibrate(new long[]{500, 1000, 500, 1000, 500, 1000}, -1);
     }
 
+    private void changeSteps(){
+        final Dialog d = new Dialog(this);
+        d.setTitle("Change Steps Goal");
+        d.setContentView(R.layout.number_picker);
+        Button b1 = (Button) d.findViewById(R.id.button1);
+        Button b2 = (Button) d.findViewById(R.id.button2);
+        final NumberPicker np = (NumberPicker) d.findViewById(R.id.numberPicker);
 
+        np.setMaxValue(50000);
+        np.setMinValue(0);
+        np.setValue(DeviceScanActivity.getInstance().steps_goal);
+        np.setWrapSelectorWheel(false);
+        np.setOnValueChangedListener(new NumberPicker.OnValueChangeListener() {
+            @Override
+            public void onValueChange(NumberPicker numberPicker, int i, int i1) {
+                np.setTag((i1 < i)?i-100:i+100);
+            }
+        });
+
+        b1.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v) {
+                DeviceScanActivity.getInstance().steps_goal = np.getValue();
+                step_pro.setMax(np.getValue());
+                d.dismiss();
+            }
+        });
+        b2.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v) {
+                d.dismiss(); // dismiss the dialog
+            }
+        });
+        d.show();
+
+    }
 
 }

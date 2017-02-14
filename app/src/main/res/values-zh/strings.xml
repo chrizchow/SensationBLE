@@ -21,4 +21,6 @@
     <string name="cancel">取消</string>
     <string name="fall_title">警告!</string>
     <string name="fall_message">用家跌倒了!!!</string>
+    <string name="steps_picker">目標步數</string>
+    <string name="steps_change">更改目標步數</string>
 </resources>

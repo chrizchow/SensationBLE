@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentStart="true">
+
+        <TableRow android:gravity="center">
+            <TextView
+                android:id="@+id/steps_picker"
+                android:text="@string/steps_picker"
+                android:gravity="center_horizontal"
+                android:textSize="18sp"
+                android:paddingTop="20dp"
+                android:paddingBottom="10dp" />
+
+        </TableRow>
+
+        <TableRow android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center">
+            <NumberPicker
+                android:id="@+id/numberPicker"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+        </TableRow>
+
+       <TableRow android:gravity="center">
+           <Button
+               android:id="@+id/button1"
+               android:layout_width="wrap_content"
+               android:layout_height="wrap_content"
+               android:text="@string/set"/>
+
+           <Button
+               android:id="@+id/button2"
+               android:layout_width="wrap_content"
+               android:layout_height="wrap_content"
+               android:text="@string/cancel"
+               android:layout_marginLeft="30dp" />
+       </TableRow>
+
+</TableLayout>

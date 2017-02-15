@@ -3,7 +3,8 @@
     xmlns:android="http://schemas.android.com/apk/res/android">
 
     <item android:title="@string/steps_change"
-        android:id="@+id/steps_change" />
+        android:id="@+id/steps_change"
+        android:showAsAction="never" />
     <item
         android:id="@+id/action_change"
         android:title="@string/btc_age"

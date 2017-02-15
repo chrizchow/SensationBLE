@@ -21,24 +21,33 @@
             android:layout_height="wrap_content"
             android:gravity="center">
             <NumberPicker
-                android:id="@+id/numberPicker"
+                android:id="@+id/numberPicker_steps"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"/>
         </TableRow>
 
-       <TableRow android:gravity="center">
-           <Button
-               android:id="@+id/button1"
-               android:layout_width="wrap_content"
-               android:layout_height="wrap_content"
-               android:text="@string/set"/>
+    <TableRow android:gravity="center"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+        <Button
+            android:id="@+id/button1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/set"/>
 
-           <Button
-               android:id="@+id/button2"
-               android:layout_width="wrap_content"
-               android:layout_height="wrap_content"
-               android:text="@string/cancel"
-               android:layout_marginLeft="30dp" />
-       </TableRow>
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/button3"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
+            android:text="@string/reset" />
+
+        <Button
+            android:id="@+id/button2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/cancel" />
+    </TableRow>
 
 </TableLayout>

@@ -19,6 +19,7 @@
     <string name="weight">Weight(kg)</string>
     <string name="set">Set</string>
     <string name="cancel">Cancel</string>
+    <string name="reset">Reset</string>
     <string name="fall_title">Warning!</string>
     <string name="fall_message">The User Fell!!!</string>
     <string name="steps_picker">Steps Goal</string>

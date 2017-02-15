@@ -221,7 +221,6 @@ public class DeviceControlActivity extends AppCompatActivity {
 
                     BluetoothGattCharacteristic stepCount = mBLEService.getSupportedGattServices().get(2).getCharacteristics().get(5);
                     mBLEService.readCharacteristic(stepCount);
-                    fallDialog();
                 }
                 else{
                     fallDialog();
@@ -249,7 +248,6 @@ public class DeviceControlActivity extends AppCompatActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.action_devicecontrol, menu);
-
         return true;
     }
 
@@ -350,10 +348,11 @@ public class DeviceControlActivity extends AppCompatActivity {
     private void changeSteps(){
         final Dialog d = new Dialog(this);
         d.setTitle("Change Steps Goal");
-        d.setContentView(R.layout.number_picker);
+        d.setContentView(R.layout.number_picker_steps);
         Button b1 = (Button) d.findViewById(R.id.button1);
         Button b2 = (Button) d.findViewById(R.id.button2);
-        final NumberPicker np = (NumberPicker) d.findViewById(R.id.numberPicker);
+        Button b3 = (Button) d.findViewById(R.id.button3);
+        final NumberPicker np = (NumberPicker) d.findViewById(R.id.numberPicker_steps);
 
         np.setMaxValue(50000);
         np.setMinValue(0);
@@ -362,7 +361,7 @@ public class DeviceControlActivity extends AppCompatActivity {
         np.setOnValueChangedListener(new NumberPicker.OnValueChangeListener() {
             @Override
             public void onValueChange(NumberPicker numberPicker, int i, int i1) {
-                np.setTag((i1 < i)?i-100:i+100);
+                numberPicker.setValue((i1 < i)?i-100:i+100);
             }
         });
 
@@ -380,6 +379,13 @@ public class DeviceControlActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 d.dismiss(); // dismiss the dialog
+            }
+        });
+        b3.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v) {
+                np.setValue(12500);
             }
         });
         d.show();

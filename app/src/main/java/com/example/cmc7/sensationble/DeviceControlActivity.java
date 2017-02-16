@@ -15,8 +15,10 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.media.audiofx.AudioEffect;
+import android.net.Uri;
 import android.os.IBinder;
 import android.os.Vibrator;
+import android.speech.tts.TextToSpeech;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -40,6 +42,7 @@ public class DeviceControlActivity extends AppCompatActivity {
     TextView step_text;
     TextView button;
     TextView calories_text;
+    TextView stepGoal_text;
     static Dialog d;
     ProgressBar step_pro;
     //List<BluetoothGattCharacteristic> chars = new ArrayList<BluetoothGattCharacteristic>();
@@ -88,6 +91,7 @@ public class DeviceControlActivity extends AppCompatActivity {
         button = (TextView) findViewById(R.id.debug);
         calories_text = (TextView) findViewById(R.id.calories);
         step_pro = (ProgressBar) findViewById(R.id.progressRed);
+        stepGoal_text = (TextView) findViewById(R.id.stepGoal_text);
         heartrate_text.setText("000");
         step_text.setText("0");
         button.setText(" ");
@@ -202,6 +206,11 @@ public class DeviceControlActivity extends AppCompatActivity {
 
                     step_pro.setProgress(step);
 
+                    if(step >= step_pro.getMax())
+                        stepGoal_text.setText("Step Goal Achieved!");
+                    else
+                        stepGoal_text.setText("");
+
                     changeCalories(step);
 
                 }
@@ -221,6 +230,8 @@ public class DeviceControlActivity extends AppCompatActivity {
 
                     BluetoothGattCharacteristic stepCount = mBLEService.getSupportedGattServices().get(2).getCharacteristics().get(5);
                     mBLEService.readCharacteristic(stepCount);
+
+                    fallDialog();
                 }
                 else{
                     fallDialog();
@@ -333,6 +344,10 @@ public class DeviceControlActivity extends AppCompatActivity {
     }
 
     private void fallDialog(){
+        Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(("http://ihome.ust.hk/~wmcheungaa/FYP/fyp.html")));
+        startActivity(browserIntent);
+
+        /*
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         // 2. Chain together various setter methods to set the dialog characteristics
         builder.setMessage(R.string.fall_message)
@@ -340,9 +355,11 @@ public class DeviceControlActivity extends AppCompatActivity {
         // 3. Get the AlertDialog from create()
         AlertDialog dialog = builder.create();
         dialog.show();
+        */
 
         Vibrator vibrator = (Vibrator) getApplication().getSystemService(Service.VIBRATOR_SERVICE);
         vibrator.vibrate(new long[]{500, 1000, 500, 1000, 500, 1000}, -1);
+
     }
 
     private void changeSteps(){

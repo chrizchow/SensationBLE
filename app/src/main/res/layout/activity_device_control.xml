@@ -130,5 +130,12 @@
         android:layout_alignParentStart="true"
         style="@android:style/Widget.Material.Light.ProgressBar.Horizontal" />
 
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/stepGoal_text"
+        android:layout_below="@+id/progressRed"
+        android:textSize="18sp" />
+
 
 </RelativeLayout>

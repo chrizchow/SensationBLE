@@ -4,7 +4,7 @@
 
     <item android:title="@string/steps_change"
         android:id="@+id/steps_change"
-        android:showAsAction="never" />
+        app:showAsAction="never" />
     <item
         android:id="@+id/action_change"
         android:title="@string/btc_age"

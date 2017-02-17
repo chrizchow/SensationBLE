@@ -346,7 +346,7 @@ public class DeviceControlActivity extends AppCompatActivity {
     private void fallDialog(){
         Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(("http://ihome.ust.hk/~wmcheungaa/FYP/fyp.html")));
         startActivity(browserIntent);
-
+        
         /*
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         // 2. Chain together various setter methods to set the dialog characteristics

@@ -13,6 +13,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.location.Location;
 import android.content.ServiceConnection;
 import android.media.audiofx.AudioEffect;
 import android.net.Uri;
@@ -26,6 +27,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.NumberPicker;
 import android.widget.TextView;
 import android.widget.ProgressBar;
@@ -37,7 +39,14 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
-public class DeviceControlActivity extends AppCompatActivity {
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.common.api.GoogleApiClient.ConnectionCallbacks;
+import com.google.android.gms.common.api.GoogleApiClient.OnConnectionFailedListener;
+
+
+public class DeviceControlActivity extends AppCompatActivity implements ConnectionCallbacks, OnConnectionFailedListener{
     TextView heartrate_text; //debug code
     TextView step_text;
     TextView button;
@@ -45,7 +54,12 @@ public class DeviceControlActivity extends AppCompatActivity {
     TextView stepGoal_text;
     static Dialog d;
     ProgressBar step_pro;
+    private String urlText;
     //List<BluetoothGattCharacteristic> chars = new ArrayList<BluetoothGattCharacteristic>();
+
+    //Location Services Google API:
+    protected GoogleApiClient mGoogleApiClient;
+    protected Location mLastLocation;
 
     private final static String TAG = DeviceControlActivity.class.getSimpleName();
     private BLEService mBLEService;
@@ -100,6 +114,14 @@ public class DeviceControlActivity extends AppCompatActivity {
 
         //TODO: Under Construction
 
+        if (mGoogleApiClient == null) {
+            mGoogleApiClient = new GoogleApiClient.Builder(this)
+                    .addConnectionCallbacks(this)
+                    .addOnConnectionFailedListener(this)
+                    .addApi(LocationServices.API)
+                    .build();
+        }
+
         Button refresh = (Button) findViewById(R.id.refresh);
         refresh.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
@@ -123,6 +145,20 @@ public class DeviceControlActivity extends AppCompatActivity {
             }
         });
 
+    }
+
+    protected void onStart() {
+        if(mGoogleApiClient!=null) {
+            mGoogleApiClient.connect();
+        }
+        super.onStart();
+    }
+
+    protected void onStop() {
+        if(mGoogleApiClient!=null){
+            mGoogleApiClient.disconnect();
+        }
+        super.onStop();
     }
 
     //This function will run after onCreate(), or when user switch back from other app:
@@ -169,16 +205,7 @@ public class DeviceControlActivity extends AppCompatActivity {
                 //finish();
                 Toast.makeText(DeviceControlActivity.this, "BLE Device Disconnected", Toast.LENGTH_SHORT).show();
             }else if(BLEService.ACTION_GATT_SERVICES_DISCOVERED.equals(action)){
-                //Show it to screen:
-
-                BluetoothGattCharacteristic chara = mBLEService.getSupportedGattServices().get(2).getCharacteristics().get(6);
-                Long tsLong = System.currentTimeMillis() / 1000;
-                tsLong = tsLong - 946656000;
-                int tsInt = tsLong.intValue();
-                String ts = tsLong.toString();
-                button.setText(ts);
-                chara.setValue(tsInt, BluetoothGattCharacteristic.FORMAT_UINT32, 0);
-                mBLEService.writeCharacteristic(chara);
+                updateTime();
 
             }else if(BLEService.ACTION_DATA_AVAILABLE.equals(action)){
                 //Take the available data:
@@ -191,8 +218,7 @@ public class DeviceControlActivity extends AppCompatActivity {
                 String heartrate_id = "00002a37-0000-1000-8000-00805f9b34fb";
 
                 if(uuid.equals(step_id)){
-                    //step_text.append("\t\tAction_Data_Avalable\n");     //debug
-                    //D2 04 00 00
+                    //step_text.append("\t\tAction_Data_Avalable\n");     //debug //D2 04 00 00
                     String str = new String(bytes);
                     Integer step = bytes[0] & 0xFF |
                             (bytes[1] & 0xFF) << 8 |
@@ -213,6 +239,8 @@ public class DeviceControlActivity extends AppCompatActivity {
 
                     changeCalories(step);
 
+                    updateTime();
+
                 }
                 else if(uuid.equals(heartrate_id)){
 
@@ -230,8 +258,6 @@ public class DeviceControlActivity extends AppCompatActivity {
 
                     BluetoothGattCharacteristic stepCount = mBLEService.getSupportedGattServices().get(2).getCharacteristics().get(5);
                     mBLEService.readCharacteristic(stepCount);
-
-                    fallDialog();
                 }
                 else{
                     fallDialog();
@@ -270,6 +296,8 @@ public class DeviceControlActivity extends AppCompatActivity {
         switch (item.getItemId()){
             case R.id.action_about:
                 aboutDialog();
+                getLocation();
+                fallDialog();
                 break;
             case R.id.action_change:
                 changeDialog();
@@ -280,6 +308,17 @@ public class DeviceControlActivity extends AppCompatActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    private void updateTime(){
+        BluetoothGattCharacteristic chara = mBLEService.getSupportedGattServices().get(2).getCharacteristics().get(6);
+        Long tsLong = System.currentTimeMillis() / 1000;
+        tsLong = tsLong - 946656000;
+        int tsInt = tsLong.intValue();
+        String ts = tsLong.toString();
+        button.setText(ts);
+        chara.setValue(tsInt, BluetoothGattCharacteristic.FORMAT_UINT32, 0);
+        mBLEService.writeCharacteristic(chara);
     }
 
     public void changeCalories(int step){
@@ -309,9 +348,12 @@ public class DeviceControlActivity extends AppCompatActivity {
         final Dialog d = new Dialog(this);
         d.setTitle("Change Information");
         d.setContentView(R.layout.number_picker);
+        final EditText editText = (EditText) d.findViewById(R.id.editText);
         Button b1 = (Button) d.findViewById(R.id.button1);
         Button b2 = (Button) d.findViewById(R.id.button2);
         final NumberPicker np = (NumberPicker) d.findViewById(R.id.numberPicker);
+
+        editText.setText(DeviceScanActivity.getInstance().username);
 
         np.setMaxValue(100);
         np.setMinValue(0);
@@ -329,6 +371,7 @@ public class DeviceControlActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 DeviceScanActivity.getInstance().weight = np.getValue();
+                DeviceScanActivity.getInstance().username = editText.getText().toString();
                 d.dismiss();
             }
         });
@@ -344,22 +387,9 @@ public class DeviceControlActivity extends AppCompatActivity {
     }
 
     private void fallDialog(){
-        Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(("http://ihome.ust.hk/~wmcheungaa/FYP/fyp.html")));
+        Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse((urlText)));
         startActivity(browserIntent);
-        
-        /*
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        // 2. Chain together various setter methods to set the dialog characteristics
-        builder.setMessage(R.string.fall_message)
-                .setTitle(R.string.fall_title);
-        // 3. Get the AlertDialog from create()
-        AlertDialog dialog = builder.create();
-        dialog.show();
-        */
-
         Vibrator vibrator = (Vibrator) getApplication().getSystemService(Service.VIBRATOR_SERVICE);
-        vibrator.vibrate(new long[]{500, 1000, 500, 1000, 500, 1000}, -1);
-
     }
 
     private void changeSteps(){
@@ -407,6 +437,54 @@ public class DeviceControlActivity extends AppCompatActivity {
         });
         d.show();
 
+    }
+
+    @Override
+    public void onConnected(Bundle connectionHint) {
+        // Provides a simple way of getting a device's location and is well suited for
+        // applications that do not require a fine-grained location and that do not need location
+        // updates. Gets the best and most recent location currently available, which may be null
+        // in rare cases when a location is not available.
+        //getLocation();
+    }
+
+    @Override
+    public void onConnectionFailed(ConnectionResult result) {
+        // Refer to the javadoc for ConnectionResult to see what error codes might be returned in
+        // onConnectionFailed.
+        Log.i(TAG, "Connection failed: ConnectionResult.getErrorCode() = " + result.getErrorCode());
+    }
+
+    @Override
+    public void onConnectionSuspended(int cause) {
+        // The connection to Google Play services was lost for some reason. We call connect() to
+        // attempt to re-establish the connection.
+        Log.i(TAG, "Connection suspended");
+        mGoogleApiClient.connect();
+    }
+
+    private void getLocation(){
+        try{
+            mLastLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
+        }catch(SecurityException e){
+            e.printStackTrace();
+        }
+
+        if (mLastLocation != null) {
+            // fetch and convert the last lat and long
+            String latitude = String.valueOf(mLastLocation.getLatitude());
+            String longitude = String.valueOf(mLastLocation.getLongitude());
+            // show to user the current lat and long
+            button.setText(latitude + " ," + longitude);
+
+            urlText = getResources().getString(R.string.json_url);
+            urlText = urlText.concat(DeviceScanActivity.getInstance().username);
+            urlText = urlText.concat("&lat="+latitude);
+            urlText = urlText.concat("&lng="+longitude);
+
+        }else{
+            Toast.makeText(this, "No Location Detected", Toast.LENGTH_LONG).show();
+        }
     }
 
 }

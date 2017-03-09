@@ -34,6 +34,7 @@ import android.support.v4.app.ActivityCompat;
 
 public class DeviceScanActivity extends AppCompatActivity implements AdapterView.OnItemClickListener {
     private static  DeviceScanActivity mInstance = null;
+    public String username = "User1";
     public int weight = 50;
     public int calories = 0;
     public int steps_goal = 12500;
@@ -112,8 +113,6 @@ public class DeviceScanActivity extends AppCompatActivity implements AdapterView
         }
 
         ActivityCompat.requestPermissions(this,new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, 1001); //Any number can be used
-
-
     }
 
     //This function will run after onCreate(), or when user switch back from other app:
